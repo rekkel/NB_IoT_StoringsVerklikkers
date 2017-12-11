@@ -15,7 +15,7 @@
  * create a new asset as Number
  *
  * device decoding:
-
+ 
 {
     "sense": 
 [
