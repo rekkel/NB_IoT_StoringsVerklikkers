@@ -8,16 +8,16 @@
 	Standard I2C-address is 0x5F.
 
 ***************************************************************************/
-
+ 
 /*****
  * ATT Settings
  *
  * create a new asset as Number
  *
  * device decoding:
- 
+
 {
-    "sense": 
+    "sense":
 [
   {
         "asset": "my_temperature",
@@ -30,7 +30,7 @@
    },
    {
         "asset": "my_humidity",
-        "value": 
+        "value":
         {
           "byte": 2,
           "bytelength": 2,
@@ -40,7 +40,7 @@
    },
    {
         "asset": "my_pressure",
-        "value": 
+        "value":
         {
             "byte": 4,
             "bytelength": 2,
@@ -49,16 +49,16 @@
     },
     {
         "asset": "my_gps",
-        "value": 
+        "value":
         {
-          "latitude": 
+          "latitude":
           {
             "byte": 6,
             "bytelength": 4,
             "type": "integer",
             "calculation": "val / 100000"
           },
-          "longitude": 
+          "longitude":
           {
             "byte": 10,
             "bytelength": 4,
@@ -69,7 +69,7 @@
     },
     {
        "asset": "bit_status",
-       "value": 
+       "value":
        {
          "byte": 14,
          "bytelength": 1,
@@ -89,13 +89,13 @@
 #include "Sodaq_UBlox_GPS.h"
 
 #if defined(ARDUINO_AVR_LEONARDO)
-#define DEBUG_STREAM Serial 
+#define DEBUG_STREAM Serial
 #define MODEM_STREAM Serial1
 
 #elif defined(ARDUINO_AVR_UNO)
 SoftwareSerial softSerial(10, 11); // RX, TX
 // You can connect an uartsbee or other board (e.g. 2nd Uno) to connect the softserial.
-#define DEBUG_STREAM softSerial 
+#define DEBUG_STREAM softSerial
 #define MODEM_STREAM Serial
 
 #elif defined(ARDUINO_SODAQ_EXPLORER)
@@ -123,7 +123,7 @@ Sodaq_LPS22HB lps22hb;
 uint32_t lat = 0;
 uint32_t lon = 0;
 uint16_t loopcount = 0;
-uint16_t maxLoopcount = 12 *300*2; // 1 uur 
+uint16_t maxLoopcount = 12 *300*2; // 1 uur
 //uint16_t maxLoopcount = 120*2; // 1 min (60 x 500ms)
 //uint16_t maxLoopcount = 20*2; // 10 sec
 int delayMS = 500;
@@ -186,7 +186,7 @@ void setup()
 	initGPS();
   initPINS();
   readSensors();
-  
+
 	digitalWrite(13, LOW);
 }
 
@@ -211,7 +211,7 @@ void initHumidityTemperature() {
 }
 
 void initPressureSensor() {
-	lps22hb.begin(0x5D);	// 
+	lps22hb.begin(0x5D);	//
 
 	if (lps22hb.whoAmI() == false)
 	{
@@ -227,39 +227,39 @@ void initGPS() {
 
 void readSensors(){
         // Create the message
-      
+
       uint16_t cursor = 0;
       int16_t temperature;
       int16_t humidity;
       int16_t pressure;
 
-    
-      
+
+
       temperature = hts221.readTemperature() * 100;
       DEBUG_STREAM.println("Temperature x100 : " + (String)temperature);
       message[cursor++] = temperature >> 8;
       message[cursor++] = temperature;
-    
+
       delay(100);
-    
+
       humidity = hts221.readHumidity() * 100;
       DEBUG_STREAM.println("Humidity x100 : " + (String)humidity);
       message[cursor++] = humidity >> 8;
       message[cursor++] = humidity;
-    
+
       delay(100);
-    
+
       pressure = lps22hb.readPressure();
       DEBUG_STREAM.println("Pressure:" + (String)pressure);
       message[cursor++] = pressure >> 8;
       message[cursor++] = pressure;
-    
+
       uint32_t start = millis();
       uint32_t timeout = 1UL * 10 * 1000; // 10 sec timeout
-      
+
       /*DEBUG_STREAM.println(String("waiting for fix ..., timeout=") + timeout + String("ms"));
       if (sodaq_gps.scan(true, timeout)) {
-    
+
         lat = sodaq_gps.getLat() * 100000;
         lon = sodaq_gps.getLon() * 100000;
         gps_fix = true;
@@ -283,8 +283,8 @@ void readSensors(){
       message[cursor++] = lat >> 16;
       message[cursor++] = lat >> 8;
       message[cursor++] = lat;
-    
-    
+
+
       message[cursor++] = lon >> 24;
       message[cursor++] = lon >> 16;
       message[cursor++] = lon >> 8;
@@ -310,14 +310,14 @@ void printMessage(){
 
 void loop()
 {
-  
-   if( loopcount == maxLoopcount) {   
+
+   if( loopcount == maxLoopcount) {
 
       readSensors();
     	do_flash_led(13);
       DEBUG_STREAM.print("The Sensors    ");
       printMessage();
-      
+
       if (nbiot.sendMessage(message, byteCount)){
          DEBUG_STREAM.println("Sensor Message is send.....");
        } else {
@@ -327,14 +327,14 @@ void loop()
          nbiot.sendMessage(message, byteCount);
          DEBUG_STREAM.println("Sensor And Message send again.....");
        }
-      
+
       loopcount = 0;
    }
 
    loopcount++;
    handleINPUTS(byteCount-1);
 
-    
+
     /*
     DEBUG_STREAM.print("byte_state = ");
     DEBUG_STREAM.println(byte_state);
@@ -360,9 +360,9 @@ void loop()
        }
        byte_state_tmp = byte_state;
      }
-   
+
      delay(delayMS);
-   
+
 }
 
 void do_flash_led(int pin)
@@ -385,16 +385,15 @@ void handleINPUTS(int cursor){
   if ( !digitalRead( L1_2_PIN )){   L1_2_Hold = true; } else {L1_2_Hold = false; }
   if ( !digitalRead( L2_2_PIN )){   L2_2_Hold = true; } else {L2_2_Hold = false; }
   if ( !digitalRead( L3_2_PIN )){   L3_2_Hold = true; } else {L3_2_Hold = false; }
-  
+
   bitWrite(message[cursor],0,L1_1_Hold);
   bitWrite(message[cursor],1,L2_1_Hold);
   bitWrite(message[cursor],2,L3_1_Hold);
   bitWrite(message[cursor],3,L1_2_Hold);
   bitWrite(message[cursor],4,L2_2_Hold);
   bitWrite(message[cursor],5,L3_2_Hold);
-  
+
   //bitWrite(message[cursor],7,gps_fix);
   byte_state = message[cursor];
-  
-}
 
+}
